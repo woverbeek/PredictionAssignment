@@ -1,0 +1,44 @@
+# Prediction Assignment
+## By : William Overbeek
+
+# R codes
+# Load train and test sets and libarries
+```{r, echo=T}
+#Import data sets
+train <- read.csv("pml-training.csv")
+test <- read.csv("pml-testing.csv")
+
+#Load libraries
+library(caret)
+library(randomForest)
+library(ggplot2)
+
+#Trim train and data sets to remove columns with many NAs and meta-data that will not be included in models
+traintrim <- train[ , apply(train, 2, function(x) !any(is.na(x)))]
+traintrim <- traintrim[-c(1:6, 12:20, 43:48, 52:60, 74:82)]
+testtrim <- test[ , apply(test, 2, function(x) !any(is.na(x)))]
+testtrim <- testtrim[-c(1:6)]
+```
+
+# Try different models using methods seen in class
+```{r, echo=T, cache=T}
+
+mod_lda <- train(classe~., data=traintrim, method="lda")
+pred_lda <- predict(mod_lda, newdata = testtrim)
+mod_gbm <- train(classe~., data=traintrim, method="gbm", verbose=FALSE)
+pred_gbm <- predict(mod_gbm, newdata=testtrim)
+cbind(pred_lda, pred_gbm)
+```
+
+
+# Report
+In order to correctly determine the "classe" of exercise performed using data collected from devices used during workouts, two models were developed. These models were used to predict the "classe" value from out of sample data. The models included a linear discriminant analysis and a boosted model. Both models were generated from a training dataset containing 19622 observations with 53 variables used to predict the "classe" variable. The linear discriminant analysis achieved an accuracy of 71.23% while the boosted model achieved an accuracy of 98.61% After their design, all models were used to predict the "classe" value from 20 out of sample observations.
+
+The following plots show the differences in prediction between the three models. As can be observed, the linear discriminant analysis and the boosted models were in concordance 15/20 times.
+
+```{r}
+qplot(pred_lda, pred_gbm)
+```
+
+From the results of this analysis, the model using the boosted procedure was selected as it had a high accuracy during resampling procedure of the model development. After filling the quiz section of the Practical Machine Learning assignment, the boosted model had a perfect score showing its high accuracy for out of sample observations. 
+
